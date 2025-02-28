@@ -12,7 +12,6 @@ import com.journeyapps.barcodescanner.ScanOptions
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
@@ -23,7 +22,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Configuração do RecyclerView
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = ProductAdapter(productList)
@@ -59,17 +57,14 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(call: Call<ProductResponse>, response: Response<ProductResponse>) {
                 if (response.isSuccessful) {
                     val results = response.body()?.items
-
                     results?.let {
                         productList.clear()
                         productList.addAll(it)
-                        println(it)
                         adapter.notifyDataSetChanged()
 
                         // Enviar produto para FastAPI após exibir na lista
                         sendProductToFastAPI(it.firstOrNull())
                     }
-
                 } else {
                     Toast.makeText(applicationContext, "Produto não encontrado!", Toast.LENGTH_SHORT).show()
                 }
@@ -82,21 +77,17 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // Envio do produto para o FastAPI
     private fun sendProductToFastAPI(product: Product?) {
         if (product == null) return
 
         val api = RetrofitClient.instanceFastAPI
 
-        // Chama o método createProduct para enviar o produto
         val call = api.createProduct(product)
 
         call.enqueue(object : Callback<Product> {
             override fun onResponse(call: Call<Product>, response: Response<Product>) {
                 if (response.isSuccessful) {
                     Toast.makeText(applicationContext, "Produto enviado com sucesso!", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(applicationContext, "Falha ao enviar produto!", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -107,4 +98,3 @@ class MainActivity : AppCompatActivity() {
         })
     }
 }
-
