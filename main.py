@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 import ProductModel, schemas
 from database import SessionLocal, engine, Base
+from typing import List
 
 import json
 
@@ -28,7 +29,7 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     )
 
     # Usando set_images para converter a lista de imagens em string JSON
-    db_product.set_images(product.images)
+    
 
     db.add(db_product)
     db.commit()
@@ -37,7 +38,13 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     return db_product
 
 
-@app.get('/products/findAll', response_model=list)
+from sqlalchemy.orm import Session
+from fastapi import Depends
+from typing import List
+import schemas
+import ProductModel
+
+@app.get('/products/findAll', response_model=List[schemas.ProductResponse])  # Utiliza o modelo correto
 def list_all(db: Session = Depends(get_db)):
     products = db.query(ProductModel.Product).all()
 
@@ -46,11 +53,11 @@ def list_all(db: Session = Depends(get_db)):
             ean=p.ean,
             title=p.title,
             lowest_recorded_price=p.lowest_recorded_price,
-            images=p.images
+            images=p.images if p.images else []  
         )
-
         for p in products
     ]
+
 
 @app.delete('/products/delete/{ean}', response_model=dict)
 def delete_item(ean: str, db: Session = Depends(get_db)):
